@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Gestion des élèves</title>
+<title>Dashboard - Gestion des élèves</title>
 <style>
 body { font-family: Arial; margin: 20px; background: #f9f9f9; }
 h1 { color: #2b7cff; text-align: center; }
@@ -17,7 +17,6 @@ button { margin: 2px; padding: 5px 10px; border-radius: 5px; border: none; curso
 #print-btn { background-color: #6c757d; color: white; margin-top:10px; }
 form { margin-top: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow:0 0 5px rgba(0,0,0,0.2);}
 input, select { padding:5px; margin:5px 0; width: 100%; border-radius:5px; border:1px solid #ccc; }
-#searchInput { margin-top: 10px; margin-bottom: 10px; }
 @media print {
   body * { visibility: hidden; }
   #elevesTable, #elevesTable * { visibility: visible; }
@@ -49,10 +48,6 @@ input, select { padding:5px; margin:5px 0; width: 100%; border-radius:5px; borde
 <button onclick="applyFilter()">Filtrer</button>
 <button id="print-btn" onclick="window.print()">Imprimer la liste</button>
 
-<!-- Recherche -->
-<label>Recherche :</label>
-<input type="text" id="searchInput" placeholder="Nom, Prénom ou Matricule">
-
 <!-- Tableau élèves -->
 <table id="elevesTable">
   <thead>
@@ -65,7 +60,9 @@ input, select { padding:5px; margin:5px 0; width: 100%; border-radius:5px; borde
       <th>Actions</th>
     </tr>
   </thead>
-  <tbody></tbody>
+  <tbody>
+    <!-- Lignes seront ajoutées par JS -->
+  </tbody>
 </table>
 
 <!-- Formulaire Ajouter élève -->
@@ -96,39 +93,17 @@ input, select { padding:5px; margin:5px 0; width: 100%; border-radius:5px; borde
 </form>
 
 <script>
-const ELEVES_WEBHOOK = "https://hook.eu2.make.com/ikpqtbbvqpd0ljl4i5o72xw48ryni50v";
-const PAIEMENTS_WEBHOOK = "https://hook.eu1.make.com/paiements-crud";
-const FACTURE_WEBHOOK = "https://hook.eu1.make.com/facture";
+// Données exemple (simule Google Sheets)
+let eleves = [
+  { matricule:'001', nom:'Rakoto', prenom:'Jean', niveau:'A1', paiement:'non' },
+  { matricule:'002', nom:'Rasoa', prenom:'Lina', niveau:'A2', paiement:'payé' }
+];
 
-let eleves = [];
-
-// Récupérer les élèves depuis Make
-async function fetchEleves(){
-  try{
-    const res = await fetch(ELEVES_WEBHOOK, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({action:"read"})
-    });
-
-    let data;
-    try {
-      data = await res.json(); // parse JSON
-    } catch(err){
-      console.warn("Réponse non JSON :", await res.text());
-      data = { eleves: [] };
-    }
-
-    eleves = data.eleves || [];
-    renderTable();
-  }catch(err){ console.error(err); }
-}
-
-// Afficher tableau
-function renderTable(){
+// Fonction pour afficher tableau
+function renderTable() {
   const tbody = document.querySelector("#elevesTable tbody");
   tbody.innerHTML = "";
-  eleves.forEach((e,i)=>{
+  eleves.forEach((e, i)=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${e.matricule}</td>
@@ -146,128 +121,21 @@ function renderTable(){
 }
 
 // Ajouter élève
-document.getElementById("addEleveForm").addEventListener("submit", async function(e){
+document.getElementById("addEleveForm").addEventListener("submit", function(e){
   e.preventDefault();
-
-  const matricule = document.getElementById("matricule").value.trim();
-  const nom = document.getElementById("nom").value.trim();
-  const prenom = document.getElementById("prenom").value.trim();
-  const niveau = document.getElementById("niveau").value;
-
-  // Vérification doublon
-  const exists = eleves.some(el => el.matricule === matricule);
-  if(exists){
-    alert("Un élève avec ce matricule existe déjà !");
-    return;
-  }
-
-  const newEleve = { matricule, nom, prenom, niveau, paiement: 'non' };
-
-  try{
-    const res = await fetch(ELEVES_WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({action:"create", data:newEleve})
-    });
-
-    let data;
-    try { data = await res.json(); } catch(err){ data = { eleves: [] }; }
-
-    eleves = data.eleves || [];
-    renderTable();
-    alert("Élève ajouté avec succès !");
-    this.reset();
-  }catch(err){ console.error(err); }
+  const newEleve = {
+    matricule: document.getElementById("matricule").value,
+    nom: document.getElementById("nom").value,
+    prenom: document.getElementById("prenom").value,
+    niveau: document.getElementById("niveau").value,
+    paiement: 'non'
+  };
+  eleves.push(newEleve);
+  renderTable();
+  this.reset();
 });
 
-// Modifier élève
-async function editEleve(index){
-  const e = eleves[index];
-  const newNom = prompt("Nom:", e.nom);
-  const newPrenom = prompt("Prénom:", e.prenom);
-  const newNiveau = prompt("Niveau (A1/A2/B1/B2):", e.niveau);
-  if(newNom && newPrenom && newNiveau){
-    const updated = {...e, nom:newNom, prenom:newPrenom, niveau:newNiveau};
-    try{
-      const res = await fetch(ELEVES_WEBHOOK,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({action:"update", data:updated})
-      });
-      let data;
-      try { data = await res.json(); } catch(err){ data = { eleves: [] }; }
-      eleves = data.eleves || [];
-      renderTable();
-    }catch(err){ console.error(err); }
-  }
-}
-
-// Supprimer élève
-async function deleteEleve(index){
-  if(!confirm("Supprimer cet élève ?")) return;
-  try{
-    const res = await fetch(ELEVES_WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({action:"delete", data:{matricule:eleves[index].matricule}})
-    });
-    let data;
-    try { data = await res.json(); } catch(err){ data = { eleves: [] }; }
-    eleves = data.eleves || [];
-    renderTable();
-  }catch(err){ console.error(err); }
-}
-
-// Paiement sur ligne
-async function payEleve(index){
-  const montant = prompt("Montant payé:");
-  if(!montant) return;
-  const e = eleves[index];
-  try{
-    await fetch(PAIEMENTS_WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({matricule:e.matricule, montant, status:"payé"})
-    });
-    await fetch(FACTURE_WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({matricule:e.matricule, nom:e.nom, prenom:e.prenom, niveau:e.niveau, montant, date:new Date().toLocaleDateString()})
-    });
-    alert(`Paiement enregistré et facture générée pour ${e.nom}`);
-    await fetchEleves();
-  }catch(err){ console.error(err); }
-}
-
-// Formulaire paiement
-document.getElementById("paiementForm").addEventListener("submit", async function(event){
-  event.preventDefault();
-
-  const matricule = document.getElementById("matriculePay").value.trim();
-  const montant = document.getElementById("montant").value;
-  const status = document.getElementById("paiementStatus").value;
-
-  const eleve = eleves.find(el=>el.matricule===matricule);
-  if(!eleve){ alert("Matricule non trouvé"); return; }
-
-  try{
-    await fetch(PAIEMENTS_WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({matricule, montant, status})
-    });
-    await fetch(FACTURE_WEBHOOK,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({matricule:eleve.matricule, nom:eleve.nom, prenom:eleve.prenom, niveau:eleve.niveau, montant, date:new Date().toLocaleDateString()})
-    });
-    alert(`Paiement enregistré et facture générée pour ${eleve.nom}`);
-    fetchEleves();
-    this.reset();
-  }catch(err){ console.error(err); }
-});
-
-// Filtrage
+// Filtrer tableau
 function applyFilter() {
   const niveau = document.getElementById("filterNiveau").value;
   const paiement = document.getElementById("filterPaiement").value;
@@ -275,27 +143,64 @@ function applyFilter() {
   rows.forEach(row=>{
     let show = true;
     const cells = row.getElementsByTagName("td");
-    if(niveau && cells[3].innerText!==niveau) show=false;
-    if(paiement && cells[4].innerText!==paiement) show=false;
+    if(niveau && cells[3].innerText !== niveau) show=false;
+    if(paiement && cells[4].innerText !== paiement) show=false;
     row.style.display = show ? "" : "none";
   });
 }
 
-// Recherche temps réel
-document.getElementById("searchInput").addEventListener("input", function(){
-  const searchTerm = this.value.toLowerCase();
-  const rows = document.querySelectorAll("#elevesTable tbody tr");
-  rows.forEach(row=>{
-    const cells = row.getElementsByTagName("td");
-    const match = cells[0].innerText.toLowerCase().includes(searchTerm) ||
-                  cells[1].innerText.toLowerCase().includes(searchTerm) ||
-                  cells[2].innerText.toLowerCase().includes(searchTerm);
-    row.style.display = match ? "" : "none";
-  });
+// Modifier élève
+function editEleve(index){
+  const e = eleves[index];
+  const newNom = prompt("Nom:", e.nom);
+  const newPrenom = prompt("Prénom:", e.prenom);
+  const newNiveau = prompt("Niveau (A1/A2/B1/B2):", e.niveau);
+  if(newNom && newPrenom && newNiveau){
+    eleves[index].nom=newNom;
+    eleves[index].prenom=newPrenom;
+    eleves[index].niveau=newNiveau;
+    renderTable();
+  }
+}
+
+// Supprimer élève
+function deleteEleve(index){
+  if(confirm("Supprimer cet élève ?")){
+    eleves.splice(index,1);
+    renderTable();
+  }
+}
+
+// Paiement élève
+function payEleve(index){
+  const montant = prompt("Montant payé:");
+  if(montant){
+    eleves[index].paiement='payé';
+    alert(`Paiement de ${montant} enregistré pour ${eleves[index].nom}`);
+    // Ici tu peux appeler Make pour enregistrer le paiement réel
+    renderTable();
+  }
+}
+
+// Formulaire paiement externe
+document.getElementById("paiementForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const matricule = document.getElementById("matriculePay").value;
+  const montant = document.getElementById("montant").value;
+  const status = document.getElementById("paiementStatus").value;
+  const eleve = eleves.find(el=>el.matricule===matricule);
+  if(eleve){
+    eleve.paiement = status;
+    alert(`Paiement de ${montant} enregistré pour ${eleve.nom}`);
+    renderTable();
+    this.reset();
+  } else {
+    alert("Matricule non trouvé");
+  }
 });
 
 // Initialisation
-fetchEleves();
+renderTable();
 </script>
 
 </body>
