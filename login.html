@@ -3,10 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Login</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
 
 <style>
 body {
@@ -17,86 +13,93 @@ body {
   align-items: center;
   height: 100vh;
 }
-form {
+
+.box {
   background: white;
-  padding: 20px 30px;
+  padding: 30px;
   border-radius: 10px;
-  box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-  width: 320px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 300px;
 }
+
+h2 {
+  text-align: center;
+  color: #2b7cff;
+}
+
 input {
   width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 8px 0;
 }
+
 button {
   width: 100%;
   padding: 10px;
-  border: none;
-  background-color: #2b7cff;
+  background: #2b7cff;
   color: white;
-  font-weight: bold;
-  border-radius: 5px;
+  border: none;
   cursor: pointer;
 }
+
 button:hover {
-  background-color: #1a5bcc;
+  background: #1a5ed8;
 }
+
 #message {
-  color: red;
-  margin-top: 10px;
   text-align: center;
-}         
+  margin-top: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<form id="loginForm">
-  <h2>Connexion Admin</h2>
-  <input type="text" id="username" placeholder="Utilisateur" required>
-  <input type="password" id="password" placeholder="Mot de passe" required>
-  <button type="submit">Se connecter</button>
-  <div id="message"></div>
-</form>
+<div class="box">
+  <h2>Connexion</h2>
+
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="login()">Se connecter</button>
+
+  <p id="message"></p>
+</div>
 
 <script>
-// remplacer par ton webhook Make pour login
-const WEBHOOK_URL = "https://hook.eu2.make.com/w4j3pfui05b96mrlh3r9lwlbtgvmvexv";
+const LOGIN_WEBHOOK = "TON_WEBHOOK_LOGIN";
 
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+async function login() {
+  const res = await fetch(LOGIN_WEBHOOK, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
+    })
+  });
 
-  // envoyer les données au webhook Make
-  try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
+  const data = await res.json();
 
-    // attendre la réponse du webhook
-    const data = await res.json();
+  if (data.success) {
+    // session simple (token)
+    sessionStorage.setItem("token", data.token);
 
-    // si le webhook indique que le login est réussi, rediriger vers dashboard
-    if(data.success) {
+    document.getElementById("message").style.color = "green";
+    document.getElementById("message").innerText = "Connexion réussie";
 
-      // login réussi → redirection vers dashboard
+    // redirection vers dashboard
+    setTimeout(() => {
       window.location.href = "dashboard.html";
-    } else {
-      document.getElementById("message").innerText = "Utilisateur ou mot de passe incorrect";
-    }
-  } catch(err) {
-    document.getElementById("message").innerText = "Erreur de connexion, réessayer";
-    console.error(err);
+    }, 1000);
+
+  } else {
+    document.getElementById("message").style.color = "red";
+    document.getElementById("message").innerText = "Login incorrect";
   }
-});
+}
 </script>
 
 </body>
