@@ -2,205 +2,520 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard - Gestion des élèves</title>
-<style>
-body { font-family: Arial; margin: 20px; background: #f9f9f9; }
-h1 { color: #2b7cff; text-align: center; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-th { background-color: #f2f2f2; }
-button { margin: 2px; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; }
-.add-btn { background-color: #2b7cff; color: white; }
-.edit-btn { background-color: #ffb700; color: white; }
-.delete-btn { background-color: #ff4c4c; color: white; }
-.pay-btn { background-color: #28a745; color: white; }
-#print-btn { background-color: #6c757d; color: white; margin-top:10px; }
-form { margin-top: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow:0 0 5px rgba(0,0,0,0.2);}
-input, select { padding:5px; margin:5px 0; width: 100%; border-radius:5px; border:1px solid #ccc; }
-@media print {
-  body * { visibility: hidden; }
-  #elevesTable, #elevesTable * { visibility: visible; }
-  #elevesTable { position: absolute; left:0; top:0; }
-}
-</style>
+<title>Dashboard</title>
 </head>
 <body>
 
-<h1>Dashboard Gestion des élèves</h1>
+<p>Session expire dans : <span id="timer"></span></p>
 
-<!-- Filtrage -->
-<label>Niveau :</label>
-<select id="filterNiveau">
-  <option value="">Tous</option>
-  <option value="A1">A1</option>
-  <option value="A2">A2</option>
-  <option value="B1">B1</option>
-  <option value="B2">B2</option>
-</select>
+<h1>Dashboard Gestion Scolaire</h1>
 
-<label>Paiement :</label>
-<select id="filterPaiement">
-  <option value="">Tous</option>
-  <option value="payé">Payé</option>
-  <option value="non">Non payé</option>
-</select>
+<p id="welcome"></p>
 
-<button onclick="applyFilter()">Filtrer</button>
-<button id="print-btn" onclick="window.print()">Imprimer la liste</button>
+<button onclick="logout()">Logout</button>
 
-<!-- Tableau élèves -->
-<table id="elevesTable">
-  <thead>
-    <tr>
-      <th>Matricule</th>
-      <th>Nom</th>
-      <th>Prénom</th>
-      <th>Niveau</th>
-      <th>Paiement</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Lignes seront ajoutées par JS -->
-  </tbody>
+<div>
+    <button onclick="allerEleves()">📚 Élèves</button>
+    <button onclick="allerPaiements()">💰 Paiements</button>
+</div>
+
+<hr>
+
+<button onclick="openFormModal()">➕ Ajouter un élève</button>
+
+<!-- Formulaire d'ajout -->
+
+<div id="formModal" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+">
+
+    <div style="
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        width:400px;
+        max-height:80vh;
+        overflow:auto;
+    ">
+
+        <h2>Ajouter un élève</h2>
+
+        <form onsubmit="submitEleve(event)">
+
+            <input type="text" id="matricule" placeholder="Matricule" required><br><br>
+            <input type="text" id="nom" placeholder="Nom" required><br><br>
+            <input type="text" id="prenom" placeholder="Prénom" required><br><br>
+            <input type="number" id="anneeNaissance" placeholder="Année naissance" required><br><br>
+            <input type="email" id="email" placeholder="Email" required><br><br>
+            <input type="text" id="telephone" placeholder="Téléphone" required><br><br>
+            <input type="text" id="facebook" placeholder="Facebook"><br><br>
+
+            <select id="niveau">
+                <option value="A1">A1</option>
+                <option value="A2">A2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+                <option value="C1">C1</option>
+                <option value="C2">C2</option>
+            </select><br><br>
+
+            <h4>Paiement</h4>
+            <input type="number" id="totalAPayer" placeholder="Total"><br><br>
+            <input type="number" id="montantPaye" placeholder="Montant payé"><br><br>
+
+            <h4>Certificats</h4>
+
+            <label><input type="checkbox" id="A1"> A1</label>
+            <label><input type="checkbox" id="A2"> A2</label>
+
+            <br><br>
+
+            B1:
+            <label><input type="checkbox" id="B1L"> L</label>
+            <label><input type="checkbox" id="B1M"> M</label>
+            <label><input type="checkbox" id="B1H"> H</label>
+            <label><input type="checkbox" id="B1S"> S</label>
+
+            <br><br>
+
+            B2:
+            <label><input type="checkbox" id="B2L"> L</label>
+            <label><input type="checkbox" id="B2M"> M</label>
+            <label><input type="checkbox" id="B2H"> H</label>
+            <label><input type="checkbox" id="B2S"> S</label>
+
+            <br><br>
+
+            C1:
+            <label><input type="checkbox" id="C1L"> L</label>
+            <label><input type="checkbox" id="C1M"> M</label>
+            <label><input type="checkbox" id="C1H"> H</label>
+            <label><input type="checkbox" id="C1S"> S</label>
+
+            <br><br>
+
+            C2:
+            <label><input type="checkbox" id="C2L"> L</label>
+            <label><input type="checkbox" id="C2M"> M</label>
+            <label><input type="checkbox" id="C2H"> H</label>
+            <label><input type="checkbox" id="C2S"> S</label>
+
+            <br><br>
+
+            <button type="submit">Envoyer</button>
+            <button type="button" onclick="closeFormModal()">Fermer</button>
+
+        </form>
+    </div>
+</div>
+
+<h3>Filtrer par certificat</h3>
+
+
+<button onclick="resetFiltres()">Reset filtres</button>
+
+<button onclick="openModal()">Filtrer les certificats</button>
+
+<div id="filterModal" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+">
+
+    <div style="
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        width:400px;
+        max-height:80vh;
+        overflow:auto;
+    ">
+        <h3>Filtrer par certificat</h3>
+
+        <div id="filters">
+            <label><input type="checkbox" value="A1"> A1</label>
+            <label><input type="checkbox" value="A2"> A2</label>
+
+            <hr>
+
+            <label><input type="checkbox" value="B1-L"> B1-L</label>
+            <label><input type="checkbox" value="B1-M"> B1-M</label>
+            <label><input type="checkbox" value="B1-H"> B1-H</label>
+            <label><input type="checkbox" value="B1-S"> B1-S</label>
+
+            <hr>
+
+            <label><input type="checkbox" value="B2-L"> B2-L</label>
+            <label><input type="checkbox" value="B2-M"> B2-M</label>
+            <label><input type="checkbox" value="B2-H"> B2-H</label>
+            <label><input type="checkbox" value="B2-S"> B2-S</label>
+
+            <hr>
+
+            <label><input type="checkbox" value="C1-L"> C1-L</label>
+            <label><input type="checkbox" value="C1-M"> C1-M</label>
+            <label><input type="checkbox" value="C1-H"> C1-H</label>
+            <label><input type="checkbox" value="C1-S"> C1-S</label>
+
+            <hr>
+
+            <label><input type="checkbox" value="C2-L"> C2-L</label>
+            <label><input type="checkbox" value="C2-M"> C2-M</label>
+            <label><input type="checkbox" value="C2-H"> C2-H</label>
+            <label><input type="checkbox" value="C2-S"> C2-S</label>
+        </div>
+
+        <br>
+
+        <button onclick="filtrerEleves()">Appliquer</button>
+        <button onclick="closeModal()">Fermer</button>
+    </div>
+</div>
+
+<!-- TABLEAU -->
+<h2>Liste des élèves</h2>
+
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Matricule</th>
+            <th>Date entrée</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Age</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Facebook</th>
+            <th>Niveau</th>
+            <th>Paiement</th>
+            <th>Certificats</th>
+        </tr>
+    </thead>
+    <tbody id="elevesTable"></tbody>
 </table>
 
-<!-- Formulaire Ajouter élève -->
-<form id="addEleveForm">
-  <h3>Ajouter un élève</h3>
-  <input type="text" id="matricule" placeholder="Matricule" required>
-  <input type="text" id="nom" placeholder="Nom" required>
-  <input type="text" id="prenom" placeholder="Prénom" required>
-  <select id="niveau" required>
-    <option value="A1">A1</option>
-    <option value="A2">A2</option>
-    <option value="B1">B1</option>
-    <option value="B2">B2</option>
-  </select>
-  <button type="submit" class="add-btn">Ajouter Élève</button>
-</form>
-
-<!-- Formulaire Paiement -->
-<form id="paiementForm">
-  <h3>Enregistrer Paiement</h3>
-  <input type="text" id="matriculePay" placeholder="Matricule élève" required>
-  <input type="number" id="montant" placeholder="Montant" required>
-  <select id="paiementStatus" required>
-    <option value="payé">Payé</option>
-    <option value="non">Non payé</option>
-  </select>
-  <button type="submit" class="pay-btn">Enregistrer Paiement</button>
-</form>
-
 <script>
-// Données exemple (simule Google Sheets)
+const SESSION_KEY = "session_user";
+const SESSION_DURATION = 20 * 20 * 60 * 1000;
+
+/* ================= SESSION ================= */
+
+function getSession() {
+    const session = JSON.parse(localStorage.getItem(SESSION_KEY));
+
+    if (!session) return null;
+
+    if (Date.now() > session.expires) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+    }
+
+    return session;
+}
+
+function refreshSession() {
+    const session = getSession();
+    if (session) {
+        session.expires = Date.now() + SESSION_DURATION;
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+}
+
+/* ================= TIMER ================= */
+
+
+function updateTimer() {
+    const session = getSession();
+
+    if (!session) return;
+
+    const remaining = session.expires - Date.now();
+
+    if (remaining <= 0) {
+        document.getElementById("timer").innerText = "Expirée";
+        localStorage.removeItem(SESSION_KEY);
+        window.location.href = "login.html";
+        return;
+    }
+
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+
+    document.getElementById("timer").innerText =
+        minutes + " min " + seconds + " sec";
+}
+
+setInterval(updateTimer, 1000);
+updateTimer();
+
+/* ================= NAVIGATION ================= */
+
+function allerEleves() {
+    window.location.href = "students.html";
+}
+
+function allerPaiements() {
+    window.location.href = "payments.html";
+}
+/* ================= PROTECTION ================= */
+
+const session = getSession();
+
+if (!session) {
+    window.location.href = "login.html";
+} else {
+    document.getElementById("welcome").innerText =
+        "Bienvenue " + session.username;
+}
+
+/* ================= LOGOUT ================= */
+
+function logout() {
+    localStorage.removeItem(SESSION_KEY);
+    window.location.href = "login.html";
+}
+
+/* ================= INTERACTION ================= */
+
+document.addEventListener("click", refreshSession);
+document.addEventListener("keypress", refreshSession);
+document.addEventListener("mousemove", refreshSession);
+
+setInterval(() => {
+    const session = getSession();
+    if (!session) {
+        alert("Session expirée");
+        window.location.href = "login.html";
+    }
+}, 60000);
+
+/* ================= DATA ================= */
+
 let eleves = [
-  { matricule:'001', nom:'Rakoto', prenom:'Jean', niveau:'A1', paiement:'non' },
-  { matricule:'002', nom:'Rasoa', prenom:'Lina', niveau:'A2', paiement:'payé' }
+{
+    matricule: "E001",
+    dateEntree: "2025-01-10",
+    nom: "Rakoto",
+    prenom: "Jean",
+    anneeNaissance: 2000,
+    email: "rakoto@mail.com",
+    telephone: "0341234567",
+    facebook: "jean.rakoto",
+    niveau: "B1",
+    paiement: {
+        statut: "payé",
+        totalAPayer: 200,
+        montantPaye: 200
+    },
+    certificats: {
+        A1: true,
+        A2: true,
+        B1: { L: true, M: true, H: false, S: true },
+        B2: { L: true, M: false, H: false, S: false },
+        C1: { L: false, M: false, H: false, S: false },
+        C2: { L: false, M: false, H: false, S: false }
+    }
+}
 ];
 
-// Fonction pour afficher tableau
-function renderTable() {
-  const tbody = document.querySelector("#elevesTable tbody");
-  tbody.innerHTML = "";
-  eleves.forEach((e, i)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.matricule}</td>
-      <td>${e.nom}</td>
-      <td>${e.prenom}</td>
-      <td>${e.niveau}</td>
-      <td>${e.paiement}</td>
-      <td>
-        <button class="edit-btn" onclick="editEleve(${i})">Modifier</button>
-        <button class="delete-btn" onclick="deleteEleve(${i})">Supprimer</button>
-        <button class="pay-btn" onclick="payEleve(${i})">Paiement</button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
+/* ================= AGE ================= */
+
+function calculerAge(anneeNaissance) {
+    return new Date().getFullYear() - anneeNaissance;
 }
 
-// Ajouter élève
-document.getElementById("addEleveForm").addEventListener("submit", function(e){
-  e.preventDefault();
-  const newEleve = {
-    matricule: document.getElementById("matricule").value,
-    nom: document.getElementById("nom").value,
-    prenom: document.getElementById("prenom").value,
-    niveau: document.getElementById("niveau").value,
-    paiement: 'non'
-  };
-  eleves.push(newEleve);
-  renderTable();
-  this.reset();
-});
+/* ================= AFFICHAGE ================= */
 
-// Filtrer tableau
-function applyFilter() {
-  const niveau = document.getElementById("filterNiveau").value;
-  const paiement = document.getElementById("filterPaiement").value;
-  const rows = document.querySelectorAll("#elevesTable tbody tr");
-  rows.forEach(row=>{
-    let show = true;
-    const cells = row.getElementsByTagName("td");
-    if(niveau && cells[3].innerText !== niveau) show=false;
-    if(paiement && cells[4].innerText !== paiement) show=false;
-    row.style.display = show ? "" : "none";
-  });
+function afficherEleves(filtres = []) {
+    const table = document.getElementById("elevesTable");
+    table.innerHTML = ""; // reset
+
+    eleves.forEach(eleve => {
+
+        let certificatsValides = [];
+
+        for (let niveau in eleve.certificats) {
+            const c = eleve.certificats[niveau];
+
+            if (typeof c === "boolean") {
+                if (c) certificatsValides.push(niveau);
+            } else {
+                if (c.L) certificatsValides.push(niveau + "-L");
+                if (c.M) certificatsValides.push(niveau + "-M");
+                if (c.H) certificatsValides.push(niveau + "-H");
+                if (c.S) certificatsValides.push(niveau + "-S");
+            }
+        }
+
+        // ✅ FILTRE MULTIPLE
+        if (filtres.length > 0) {
+            const match = filtres.some(f => certificatsValides.includes(f));
+            if (!match) return;
+        }
+
+        let certifs = certificatsValides.join(", ");
+        if (certifs === "") certifs = "Aucun";
+
+        const paiement = `
+Statut: ${eleve.paiement.statut}<br>
+Total: ${eleve.paiement.totalAPayer}<br>
+Payé: ${eleve.paiement.montantPaye}<br>
+Reste: ${eleve.paiement.totalAPayer - eleve.paiement.montantPaye}
+`;
+
+        const age = calculerAge(eleve.anneeNaissance);
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${eleve.matricule}</td>
+            <td>${eleve.dateEntree}</td>
+            <td>${eleve.nom}</td>
+            <td>${eleve.prenom}</td>
+            <td>${age}</td>
+            <td>${eleve.email}</td>
+            <td>${eleve.telephone}</td>
+            <td>${eleve.facebook}</td>
+            <td>${eleve.niveau}</td>
+            <td>${paiement}</td>
+            <td>${certifs}</td>
+        `;
+
+        table.appendChild(row);
+    });
+}           
+
+function getFiltresSelectionnes() {
+    const checkboxes = document.querySelectorAll("#filters input[type='checkbox']");
+    let filtres = [];
+
+    checkboxes.forEach(cb => {
+        if (cb.checked) {
+            filtres.push(cb.value);
+        }
+    });
+
+    return filtres;
+}
+afficherEleves();
+
+/*==================== FILTRAGE =================*/
+
+function filtrerEleves() {
+    const filtres = getFiltresSelectionnes();
+    afficherEleves(filtres);
 }
 
-// Modifier élève
-function editEleve(index){
-  const e = eleves[index];
-  const newNom = prompt("Nom:", e.nom);
-  const newPrenom = prompt("Prénom:", e.prenom);
-  const newNiveau = prompt("Niveau (A1/A2/B1/B2):", e.niveau);
-  if(newNom && newPrenom && newNiveau){
-    eleves[index].nom=newNom;
-    eleves[index].prenom=newPrenom;
-    eleves[index].niveau=newNiveau;
-    renderTable();
-  }
+window.onclick = function(event) {
+    const modal = document.getElementById("filterModal");
+    if (event.target === modal) {
+        closeModal();
+    }
 }
 
-// Supprimer élève
-function deleteEleve(index){
-  if(confirm("Supprimer cet élève ?")){
-    eleves.splice(index,1);
-    renderTable();
-  }
+function resetFiltres() {
+    document.querySelectorAll("#filters input").forEach(cb => cb.checked = false);
+    afficherEleves([]);
 }
 
-// Paiement élève
-function payEleve(index){
-  const montant = prompt("Montant payé:");
-  if(montant){
-    eleves[index].paiement='payé';
-    alert(`Paiement de ${montant} enregistré pour ${eleves[index].nom}`);
-    // Ici tu peux appeler Make pour enregistrer le paiement réel
-    renderTable();
-  }
+function openModal() {
+    document.getElementById("filterModal").style.display = "flex";
 }
 
-// Formulaire paiement externe
-document.getElementById("paiementForm").addEventListener("submit", function(e){
-  e.preventDefault();
-  const matricule = document.getElementById("matriculePay").value;
-  const montant = document.getElementById("montant").value;
-  const status = document.getElementById("paiementStatus").value;
-  const eleve = eleves.find(el=>el.matricule===matricule);
-  if(eleve){
-    eleve.paiement = status;
-    alert(`Paiement de ${montant} enregistré pour ${eleve.nom}`);
-    renderTable();
-    this.reset();
-  } else {
-    alert("Matricule non trouvé");
-  }
-});
+function closeModal() {
+    document.getElementById("filterModal").style.display = "none";
+}
 
-// Initialisation
-renderTable();
+/*===============Formulaire d'ajout===============*/
+
+function openFormModal() {
+    document.getElementById("formModal").style.display = "flex";
+}
+
+function closeFormModal() {
+    document.getElementById("formModal").style.display = "none";
+}
+
+function submitEleve(e) {
+    e.preventDefault();
+
+    const total = Number(document.getElementById("totalAPayer").value);
+    const paye = Number(document.getElementById("montantPaye").value);
+
+    const nouvelEleve = {
+        matricule: document.getElementById("matricule").value,
+        dateEntree: new Date().toISOString().split("T")[0],
+        nom: document.getElementById("nom").value,
+        prenom: document.getElementById("prenom").value,
+        anneeNaissance: Number(document.getElementById("anneeNaissance").value),
+        email: document.getElementById("email").value,
+        telephone: document.getElementById("telephone").value,
+        facebook: document.getElementById("facebook").value,
+        niveau: document.getElementById("niveau").value,
+
+        paiement: {
+            totalAPayer: total,
+            montantPaye: paye,
+            statut: paye >= total ? "payé" : "partiel"
+        },
+
+        certificats: {
+            A1: document.getElementById("A1").checked,
+            A2: document.getElementById("A2").checked,
+
+            B1: {
+                L: document.getElementById("B1L").checked,
+                M: document.getElementById("B1M").checked,
+                H: document.getElementById("B1H").checked,
+                S: document.getElementById("B1S").checked
+            },
+
+            B2: {
+                L: document.getElementById("B2L").checked,
+                M: document.getElementById("B2M").checked,
+                H: document.getElementById("B2H").checked,
+                S: document.getElementById("B2S").checked
+            },
+
+            C1: {
+                L: document.getElementById("C1L").checked,
+                M: document.getElementById("C1M").checked,
+                H: document.getElementById("C1H").checked,
+                S: document.getElementById("C1S").checked
+            },
+
+            C2: {
+                L: document.getElementById("C2L").checked,
+                M: document.getElementById("C2M").checked,
+                H: document.getElementById("C2H").checked,
+                S: document.getElementById("C2S").checked
+            }
+        }
+    };
+
+    eleves.push(nouvelEleve);
+    
+
+    afficherEleves();
+
+    closeFormModal();
+    refreshSession();
+}
 </script>
 
 </body>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+</head>
+<body>
+
+<h2>Connexion</h2>
+
+<input type="text" id="username" placeholder="Username"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Se connecter</button>
+
+<p id="message"></p>
+
+<script>
+const WEBHOOK_URL = "https://hook.eu2.make.com/w4j3pfui05b96mrlh3r9lwlbtgvmvexv";
+const SESSION_KEY = "session_user";
+const SESSION_DURATION = 20 * 60 * 1000; // 20 min
+
+async function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        // créer session
+        const session = {
+            username: username,
+            expires: Date.now() + SESSION_DURATION
+        };
+
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+        // redirection vers dashboard
+        window.location.href = "dashboard.html";
+    } else {
+        document.getElementById("message").innerText = "Login incorrect";
+    }
+}
+</script>
+
+</body>
+</html>
