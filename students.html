@@ -1,14 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students</title>
+    <script src="script/sessionPage.js"></script>
 </head>
+
 <body>
 
+    <header>
+        <div>
+            <h1>Welcome to the Students Page</h1>
+            <div>
+                <button>Payements</button>
+                <button onclick="logout()">Se déconnecter</button>
+            </div>
+        </div>
+    </header>
+    <main>
+
+        <table border="0.5px" cellspacing="0" cellpadding="10px">
+            <thead>
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Age</th>
+                    <th>Date d'entrée</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Facebook</th>
+                    <th>Niveau</th>
+                    <th>Paiement</th>
+                    <th>Montant payé</th>
+                    <th>Reste à payer</th>
+                    <th>A1</th>
+                    <th>A2</th>
+                    <th>B1</th>
+                    <th>B2</th>
+                    <th>C1</th>
+                    <th>C2</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+
+    </main>
 </body>
-<script>
-    
-</script>
+
+<script src="script/affichage.js"></script>
+
 </html>
