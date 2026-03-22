@@ -67,8 +67,10 @@ button:hover {
 </div>
 
 <script>
+// Ton webhook pour le login
 const LOGIN_WEBHOOK = "TON_WEBHOOK_LOGIN";
 
+// Fonction de login
 async function login() {
   const res = await fetch(LOGIN_WEBHOOK, {
     method: "POST",
@@ -80,12 +82,17 @@ async function login() {
       password: document.getElementById("password").value
     })
   });
-
+// Récupération de la réponse
   const data = await res.json();
 
+// Si le login est réussi
   if (data.success) {
+
+    const expireTime = new Date().getTime() + 60 * 60 * 60 * 1000; // 1 heurer
+
     // session simple (token)
     sessionStorage.setItem("token", data.token);
+    sessionStorage.setItem("expireTime", expireTime);
 
     document.getElementById("message").style.color = "green";
     document.getElementById("message").innerText = "Connexion réussie";
