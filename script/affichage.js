@@ -1,25 +1,30 @@
-// Données d'exemple pour les étudiants
-eleves =[   
-{
-    matricule: "E001",
-    nom: "Rakoto",
-    prenom: "Jean",
-    dateNaissance: "2000-05-15",
-    dateEntree: "2025-01-10",
-    email: "rakoto@mail.com",
-    telephone: "0341234567",
-    facebook: "jean.rakoto",
-    niveau: "B1",
-    paiement: "payé",
-    totalAPayer: 200,
-    montantPayé: 200,
-    A1: true,
-    A2: true,
-    B1: "L",
-    B2: "LM",
-    C1: "SM",
-    C2: ""
-}];
+
+// URL du webhook pour le login
+const ETUDIENT_WEBHOOK = "https://hook.eu1.make.com/vhkt0aixnbctlmn182uprw0kfp5s2m57";
+let students = [];
+async function fetchStudents() {
+  const res = await fetch(ETUDIENT_WEBHOOK, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        action: "fetch_students"
+    })
+  });
+
+// Récupération de la réponse
+  const data = await res.json();
+  return data;
+
+}
+
+async function loadStudents() {
+    students = await fetchStudents();
+    console.log(students);
+    afficheEtudiants();
+  } 
+
 
 // script pour afficher les étudiants dans la table
 function afficheEtudiants() {
@@ -31,7 +36,7 @@ function afficheEtudiants() {
     tbody.innerHTML = "";
 
     // Afficher les données des étudiants dans le tableau
-    eleves.forEach((e) => {
+    students.forEach((e) => {
         let row = `<tr>
             <td>${e.matricule}</td>
             <td>${e.nom}</td>
@@ -57,4 +62,5 @@ function afficheEtudiants() {
     })
 }
 
-window.onload = afficheEtudiants;  
+// Appeler la fonction pour afficher les étudiants lorsque la page est chargée
+window.onload = loadStudents;
