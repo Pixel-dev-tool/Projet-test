@@ -93,7 +93,8 @@ async function login() {
     // session simple (token)
     sessionStorage.setItem("token", data.token);
     sessionStorage.setItem("expireTime", expireTime);
-
+    sessionStorage.setItem("Wohnung", "wir sind im Student List.");
+    
     document.getElementById("message").style.color = "green";
     document.getElementById("message").innerText = "Connexion réussie";
 

@@ -5,51 +5,169 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students</title>
+
     <script src="script/sessionPage.js"></script>
+    <script src="script/affichage.js"></script>
+    <script src="script/optionModal.js"></script>
+    <script src="script/ajoutEtudient.js"></script>
+
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            /* IMPORTANT */
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 40px auto;
+            padding: 20px;
+            width: 420px;
+            max-height: 90vh;
+            /* limite la hauteur */
+            overflow-y: auto;
+            /* scroll interne */
+            border-radius: 8px;
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 6px;
+        }
+    </style>
 </head>
 
 <body>
 
     <header>
-        <div>
-            <h1>Welcome to the Students Page</h1>
-            <div>
-                <button>Payements</button>
-                <button onclick="logout()">Se déconnecter</button>
-            </div>
-        </div>
+        <h1>Students Page</h1>
+        <button onclick="openModal()">Ajouter un étudiant</button>
+        <button onclick="logout()">Se déconnecter</button>
     </header>
+
     <main>
 
-        <table border="0.5px" cellspacing="0" cellpadding="10px">
+        <!-- MODAL -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span onclick="closeModal()">❌</span>
+
+                <h2>Ajouter un étudiant</h2>
+
+                <input type="text" id="matricule" placeholder="Matricule">
+                <input type="text" id="nom" placeholder="Nom">
+                <input type="text" id="prenom" placeholder="Prénom">
+                <input type="text" id="niveau" placeholder="Niveau">
+
+                <h5>Date de naissance :</h5>
+                <input type="date" id="dateNaissance">
+                <h5>Date d'entrée :</h5>
+                <input type="date" id="dateEntree">
+
+                <h4>Contact :</h4>
+                <input type="text" id="facebook" placeholder="Facebook">
+                <input type="text" id="email" placeholder="Email">
+                <input type="text" id="telephone" placeholder="Téléphone">
+
+                <h4>Paiement :</h4>
+                <input type="number" id="totalAPayer" placeholder="Total à payer" value="0">
+                <input type="number" id="montantPaye" placeholder="Montant payé" value="0">
+
+                <h4>Certifications</h4>
+                <label> A1:<input type="checkbox" id="a1"></label>
+                <label> A2:<input type="checkbox" id="a2"></label>
+
+                <label>B1:<input type="text" id="B1" placeholder="B1" value="Null"></label>
+                <label>B2:<input type="text" id="B2" placeholder="B2" value="Null"></label>
+                <label>C1:<input type="text" id="C1" placeholder="C1" value="Null"></label>
+                <label>C2:<input type="text" id="C2" placeholder="C2" value="Null"></label>
+                <input type="hidden" id="Code" value="ajout">
+                <br><br>
+                <button onclick="ajouterEtudiant()">Enregistrer</button>
+            </div>
+        </div>
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <span onclick="closePaymentModal()">❌</span>
+
+                <h2>💰 Paiement étudiant</h2>
+
+                <!-- Infos étudiant -->
+                <input type="text" id="p_matricule" placeholder="Matricule" readonly>
+                <input type="text" id="p_nom" placeholder="Nom" readonly>
+                <input type="text" id="p_prenom" placeholder="Prénom" readonly>
+                <input type="text" id="p_niveau" placeholder="Niveau" readonly>
+
+                <h4>Paiement</h4>
+
+                <label>Total à payer</label>
+                <input type="number" id="p_total" readonly>
+
+                <label>Déjà payé</label>
+                <input type="number" id="p_dejaPaye" readonly>
+
+                <label>Montant à payer maintenant</label>
+                <input type="number" id="p_montant" placeholder="Entrer le montant">
+
+                <label>Reste après paiement</label>
+                <input type="number" id="p_reste" readonly>
+
+                <label>Mode de paiement</label>
+                <select id="p_mode">
+                    <option value="">Choisir</option>
+                    <option value="Especes">Espèces</option>
+                    <option value="MVola">MVola</option>
+                    <option value="OrangeMoney">Orange Money</option>
+                    <option value="AirtelMoney">Airtel Money</option>
+                </select>
+
+                <br><br>
+                <button onclick="validerPaiement()">Valider</button>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <table border="1" cellpadding="8">
             <thead>
                 <tr>
                     <th>Matricule</th>
-                    <th>Nom</th>
+                    <th>Nom</th>s
                     <th>Prénom</th>
-                    <th>Age</th>
-                    <th>Date d'entrée</th>
+                    <th>Date naissance</th>
+                    <th>Date entrée</th>
                     <th>Email</th>
                     <th>Téléphone</th>
                     <th>Facebook</th>
                     <th>Niveau</th>
-                    <th>Paiement</th>
-                    <th>Montant payé</th>
-                    <th>Reste à payer</th>
+                    <th>Total</th>
+                    <th>Payé</th>
+                    <th>Reste</th>
                     <th>A1</th>
                     <th>A2</th>
                     <th>B1</th>
                     <th>B2</th>
                     <th>C1</th>
                     <th>C2</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
 
     </main>
-</body>
 
-<script src="script/affichage.js"></script>
+</body>
 
 </html>

@@ -34,9 +34,10 @@ function afficheEtudiants() {
 
     // Vider le corps du tableau avant de le remplir
     tbody.innerHTML = "";
+    document.getElementById("matricule").value = students.length+1;
 
     // Afficher les données des étudiants dans le tableau
-    students.forEach((e) => {
+    students.forEach((e, index) => {
         let row = `<tr>
             <td>${e.matricule}</td>
             <td>${e.nom}</td>
@@ -56,11 +57,33 @@ function afficheEtudiants() {
             <td>${e.B2}</td>
             <td>${e.C2}</td>
             <td>${e.C1}</td>
+            <td>
+                <button onclick="editStudent(${index})">Modifier</button>
+                <button onclick="deleteStudent(${index})">Supprimer</button>
+                <button onclick="openPaymentModal(${index})">💰 Payer</button>
+            </td>
         </tr>`;
         tbody.innerHTML += row;
 
     })
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const montantInput = document.getElementById("p_montant");
+
+    montantInput.addEventListener("input", function () {
+
+        let montant = parseFloat(this.value) || 0;
+        let total = parseFloat(document.getElementById("p_total").value) || 0;
+        let deja = parseFloat(document.getElementById("p_dejaPaye").value) || 0;
+
+        let reste = total - (deja + montant);
+
+        document.getElementById("p_reste").value = reste;
+    });
+
+});
 
 // Appeler la fonction pour afficher les étudiants lorsque la page est chargée
 window.onload = loadStudents;
