@@ -52,52 +52,15 @@
 <body class="bodychoise">
 
     <header>
-        <h1>Students Page</h1>
-        <button onclick="openModal()">Ajouter un étudiant</button>
+        <h1>Payement Page</h1>
+        <button onclick="openFormModal()">Ajouter un payement
+        </button>
         <button onclick="logout()">Se déconnecter</button>
+        <button onclick="loadStudents()">List des Payements</button>
     </header>
 
     <main>
 
-        <!-- MODAL -->
-        <div id="modal" class="modal">
-            <div class="modal-content">
-                <span onclick="closeModal()">❌</span>
-
-                <h2>Ajouter un étudiant</h2>
-
-                <input type="text" id="matricule" placeholder="Matricule">
-                <input type="text" id="nom" placeholder="Nom">
-                <input type="text" id="prenom" placeholder="Prénom">
-                <input type="text" id="niveau" placeholder="Niveau">
-
-                <h5>Date de naissance :</h5>
-                <input type="date" id="dateNaissance">
-                <h5>Date d'entrée :</h5>
-                <input type="date" id="dateEntree">
-
-                <h4>Contact :</h4>
-                <input type="text" id="facebook" placeholder="Facebook">
-                <input type="text" id="email" placeholder="Email">
-                <input type="text" id="telephone" placeholder="Téléphone">
-
-                <h4>Paiement :</h4>
-                <input type="number" id="totalAPayer" placeholder="Total à payer" value="0">
-                <input type="number" id="montantPaye" placeholder="Montant payé" value="0">
-
-                <h4>Certifications</h4>
-                <label> A1:<input type="checkbox" id="a1"></label>
-                <label> A2:<input type="checkbox" id="a2"></label>
-
-                <label>B1:<input type="text" id="B1" placeholder="B1" value="Null"></label>
-                <label>B2:<input type="text" id="B2" placeholder="B2" value="Null"></label>
-                <label>C1:<input type="text" id="C1" placeholder="C1" value="Null"></label>
-                <label>C2:<input type="text" id="C2" placeholder="C2" value="Null"></label>
-                <input type="hidden" id="Code" value="ajout">
-                <br><br>
-                <button onclick="ajouterEtudiant()">Enregistrer</button>
-            </div>
-        </div>
         <div id="paymentModal" class="modal">
             <div class="modal-content">
                 <span onclick="closePaymentModal()">❌</span>
@@ -105,24 +68,24 @@
                 <h2>💰 Paiement étudiant</h2>
 
                 <!-- Infos étudiant -->
-                <input type="text" id="p_matricule" placeholder="Matricule" readonly>
-                <input type="text" id="p_nom" placeholder="Nom" readonly>
-                <input type="text" id="p_prenom" placeholder="Prénom" readonly>
-                <input type="text" id="p_niveau" placeholder="Niveau" readonly>
+                <input type="text" id="p_matricule" placeholder="Matricule">
+                <input type="text" id="p_nom" placeholder="Nom">
+                <input type="text" id="p_prenom" placeholder="Prénom">
+                <input type="text" id="p_niveau" placeholder="Niveau">
 
                 <h4>Paiement</h4>
 
                 <label>Total à payer</label>
-                <input type="number" id="p_total" readonly>
+                <input type="number" id="p_total">
 
                 <label>Déjà payé</label>
-                <input type="number" id="p_dejaPaye" readonly>
+                <input type="number" id="p_dejaPaye">
 
                 <label>Montant à payer maintenant</label>
                 <input type="number" id="p_montant" placeholder="Entrer le montant">
 
                 <label>Reste après paiement</label>
-                <input type="number" id="p_reste" readonly>
+                <input type="number" id="p_reste">
 
                 <label>Mode de paiement</label>
                 <select id="p_mode">
@@ -142,25 +105,17 @@
         <table border="1" cellpadding="8">
             <thead>
                 <tr>
-                    <th>Matricule</th>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Date naissance</th>
-                    <th>Date entrée</th>
-                    <th>Email</th>
-                    <th>Téléphone</th>
-                    <th>Facebook</th>
-                    <th>Niveau</th>
-                    <th>Total</th>
-                    <th>Payé</th>
-                    <th>Reste</th>
-                    <th>A1</th>
-                    <th>A2</th>
-                    <th>B1</th>
-                    <th>B2</th>
-                    <th>C1</th>
-                    <th>C2</th>
-                    <th>Actions</th>
+                    <td>Ref</td>
+                    <td>Mode</td>
+                    <td>Nom</td>
+                    <td>Prénom</td>
+                    <td>Date</td>
+                    <td>Matricule</td>
+                    <td>Email</td>
+                    <td>Niveau</td>
+                    <td>totalAPayer</td>
+                    <td>DejatPayer</td>
+                    <td>Reste</td>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>

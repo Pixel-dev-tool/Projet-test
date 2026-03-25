@@ -1,6 +1,6 @@
 const Ajout_webhook = "https://hook.eu1.make.com/eff2ik1cgfhfw5e2zj6oussktxjscbxa";
 
-async function ajouterEtudiant() {
+async function ajouterPayementPagePayement() {
 
   try {
     const dataToSend = {
