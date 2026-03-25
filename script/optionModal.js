@@ -1,10 +1,12 @@
-function openFormModal() {
-    document.getElementById("paymentModal").classList.add("show");
+function openModal() {
+    document.getElementById("modal").classList.add("show");
+
 }
 
-function closepaymentModal() {
+function closeModal() {
     document.getElementById("modal").classList.remove("show");
 }
+
 
 function openPaymentModal(index) {
 
